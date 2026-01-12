@@ -58,6 +58,7 @@
     button.secondary { background-color: #e5e7eb; color: #111827; }
     button.danger { background-color: #dc2626; color: #ffffff; }
     button + button { margin-left: 0.5rem; }
+    button:disabled { opacity: 0.65; cursor: not-allowed; }
     .flex { display: flex; }
     .flex-wrap { flex-wrap: wrap; }
     .items-center { align-items: center; }
@@ -404,7 +405,7 @@
         </div>
 
         <div class="mt-2">
-          <button type="submit" class="primary">ถัดไป ส่วนที่ 2</button>
+          <button id="student-next-btn" type="submit" class="primary">ถัดไป ส่วนที่ 2</button>
           <button type="button" class="secondary" onclick="backToRoleSelect()">กลับหน้าแรก</button>
         </div>
 
@@ -418,7 +419,7 @@
         <div>
           <h2 class="mb-1">สำหรับนักเรียน – ส่วนที่ 2</h2>
           <div class="text-sm" style="color:#374151;">ใบบันทึกข้อมูลระดับกิจกรรมทางกาย (Physical Activity Log Sheet)</div>
-          <div class="text-xs" style="color:#6b7280;">* บันทึกเมื่อกรอกครบทุกช่อง (ยกเว้น “หมายเหตุ”)</div>
+          <div class="text-xs" style="color:#6b7280;">* บันทึกเมื่อกรอกครบทุกช่อง (ยกเว้น “หมายเหตุ” และหัวข้อที่ไม่บังคับ)</div>
         </div>
         <div class="mini-hint">
           รหัสประจำตัว: <span id="student-mini-id" class="font-bold"></span><br>
@@ -467,10 +468,11 @@
             <input type="time" id="s-activityEnd" readonly>
           </div>
 
+          <!-- ✅ เปลี่ยนเป็น "ไม่บังคับ" -->
           <div class="field span-8">
             <div class="field-head">
               <div class="label">กิจกรรมทางกายในห้องเรียน (เลือกได้มากกว่า 1 ข้อ)</div>
-              <div class="req-dot">บังคับ</div>
+              <div class="req-dot" style="color:#6b7280;">ไม่บังคับ</div>
             </div>
             <div class="option-row">
               <label><input type="checkbox" class="s-class-activity" value="กีฬา (มุ่งพัฒนาทักษะเพื่อแข่งขัน)"> กีฬา (มุ่งพัฒนาทักษะเพื่อแข่งขัน)</label>
@@ -479,27 +481,29 @@
             </div>
           </div>
 
+          <!-- ✅ เปลี่ยนเป็น "ไม่บังคับ" -->
           <div class="field span-6">
             <div class="field-head">
               <div class="label">เวลาเริ่มต้นคาบวิชาพลศึกษา (07:00–17:00)</div>
-              <div class="req-dot">บังคับ</div>
+              <div class="req-dot" style="color:#6b7280;">ไม่บังคับ</div>
             </div>
             <select id="s-peStart">
               <option value="">-- เลือกเวลา --</option>
             </select>
           </div>
 
+          <!-- ✅ เปลี่ยนเป็น "ไม่บังคับ" -->
           <div class="field span-6">
             <div class="field-head">
               <div class="label">เวลาสิ้นสุดคาบเรียนพลศึกษา (07:00–17:00)</div>
-              <div class="req-dot">บังคับ</div>
+              <div class="req-dot" style="color:#6b7280;">ไม่บังคับ</div>
             </div>
             <select id="s-peEnd">
               <option value="">-- เลือกเวลา --</option>
             </select>
           </div>
 
-          <!-- NEW numeric fields BEFORE duration section -->
+          <!-- numeric fields -->
           <div class="field span-4">
             <div class="field-head">
               <div class="label">
@@ -670,7 +674,8 @@
         </div>
 
         <div class="mt-3 actions-bar">
-          <button type="button" class="primary" onclick="saveStudentTable()">บันทึกข้อมูลของตนเอง</button>
+          <!-- ✅ เพิ่ม id ให้ปุ่มบันทึก -->
+          <button id="student-save-btn" type="button" class="primary" onclick="saveStudentTable()">บันทึกข้อมูลของตนเอง</button>
           <button type="button" class="secondary" onclick="resetStudentLog()">ล้างข้อมูลในฟอร์ม</button>
           <span id="student-log-status" class="text-sm"></span>
         </div>
@@ -818,21 +823,6 @@
       </div>
     </div>
 
-    <!-- SubAdmin management (main admin only) -->
-    <div id="subadmin-management-card" class="card hidden">
-      <h3 class="mb-2">จัดการครูผู้ดูแลระบบ (สำหรับ Cypas Team)</h3>
-      <p class="text-xs mb-2" style="color:#6b7280;">
-        * ปุ่ม “ปิดใช้งาน” จะทำให้ครูผู้ดูแลระบบล็อกอินไม่ได้ (ระบบไม่ลบข้อมูลนักเรียน)
-      </p>
-
-      <div class="flex flex-wrap gap-4">
-        <div style="flex:1; min-width:260px;">
-          <label>รายชื่อครูผู้ดูแลระบบ (Active)</label>
-          <div id="subadmin-list" class="mt-1 text-sm"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- Data summary & export -->
     <div class="card">
       <h3 class="mb-2">สรุปข้อมูลที่บันทึก &amp; ส่งออก</h3>
@@ -903,19 +893,19 @@
 </div>
 
 <script>
-  // ===== Google Apps Script Web App URL (Deploy ใหม่ของคุณ) =====
+  // ===== Google Apps Script Web App URL (อัปเดตเป็นตัวล่าสุดของคุณ) =====
   const API_URL = "https://script.google.com/macros/s/AKfycbxClFqLfBr5pNQ-Yo4ZjOY_qBbsIktdeMIh-0Zavlk1KMkyc0YT3MjFRrVW1z2g7b5U9A/exec";
 
   // ===== Auth =====
   const mainAdmin = { username: "kooamorn", password: "12345678", role: "mainAdmin" };
 
   // ===== State =====
-  let currentUser = null;       // สำหรับ admin
-  let currentStudent = null;    // สำหรับนักเรียน
+  let currentUser = null;
+  let currentStudent = null;
   let subAdmins = [];
   let schools = [];
-  let dataEntries = [];         // ข้อมูลจากนักเรียน (ส่วนที่ 2)
-  let studentEntries = [];      // ข้อมูลนักเรียน (ส่วนที่ 1)
+  let dataEntries = [];
+  let studentEntries = [];
 
   // ===== Local storage (cache/fallback) =====
   function loadFromStorage() {
@@ -942,19 +932,40 @@
   }
 
   // ===== API helpers =====
-  // JSONP GET (หลบ CORS ได้บน GitHub Pages)
-  function apiGetAll() {
+  // JSONP GET (หลบ CORS ได้บน GitHub Pages) + timeout กันค้าง
+  function apiGetAll(timeoutMs = 9000) {
     return new Promise((resolve, reject) => {
       const cb = "cb_" + Math.random().toString(36).slice(2);
-      window[cb] = (resp) => {
-        try { resolve(resp); }
-        finally {
-          delete window[cb];
-          script.remove();
-        }
+      let done = false;
+
+      const cleanup = () => {
+        try { delete window[cb]; } catch (e) {}
+        if (script && script.parentNode) script.parentNode.removeChild(script);
       };
+
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        cleanup();
+        reject(new Error("JSONP timeout"));
+      }, timeoutMs);
+
+      window[cb] = (resp) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        resolve(resp);
+      };
+
       const script = document.createElement("script");
-      script.onerror = () => reject(new Error("JSONP load failed"));
+      script.onerror = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        reject(new Error("JSONP load failed"));
+      };
       script.src = `${API_URL}?action=getAll&callback=${cb}&_=${Date.now()}`;
       document.body.appendChild(script);
     });
@@ -992,6 +1003,22 @@
       console.warn("refreshFromSheet failed -> fallback cache", e);
       return false;
     }
+  }
+
+  // ✅ ลดความหน่วงบน GitHub: “ซิงก์เข้าชีตแบบพื้นหลัง” (ไม่บล็อก UI)
+  let _syncTimer = null;
+  function scheduleBackgroundSync(reason = "") {
+    if (_syncTimer) clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(async () => {
+      await refreshFromSheet();
+      // ถ้าอยู่หน้า admin ให้รีเฟรชตารางแบบเงียบ ๆ
+      if (currentUser) {
+        updateUserHeader();
+        renderSchoolList();
+        renderSummaryFilterOptions();
+        renderSummaryTable();
+      }
+    }, 1200);
   }
 
   // ===== Fuzzy match (>=70%) สำหรับชื่อโรงเรียน =====
@@ -1080,7 +1107,6 @@
     document.getElementById("main-container").classList.remove("hidden");
     updateUserHeader();
     renderSchoolList();
-    renderSubAdminList();            // ✅ เพิ่ม
     renderSummaryFilterOptions();
     renderSummaryTable();
   }
@@ -1157,7 +1183,6 @@
     statusEl.textContent = "";
     statusEl.classList.remove("error-text", "success-text");
 
-    // must have at least one of 3 codes
     const requiredOk = !!(school && province && id && fullName && sex && weightStr && heightStr && groupType);
     const hasAtLeastOneCode = !!(feelfitId || sensId || questionnaireId);
 
@@ -1182,19 +1207,33 @@
       id, fullName, sex, weight: weightStr, height: heightStr, groupType,
       timestamp: new Date().toISOString()
     });
-
     if (!schools.includes(school)) schools.push(school);
     saveCacheToStorage();
 
-    // send to Sheet
-    await apiPost("appendStudent", {
+    // ✅ ทำให้ลื่น: ไม่รอ refreshFromSheet (ซิงก์พื้นหลังแทน)
+    const nextBtn = document.getElementById("student-next-btn");
+    if (nextBtn) nextBtn.disabled = true;
+
+    statusEl.textContent = "กำลังบันทึกข้อมูล กรุณารอซักครู่";
+    statusEl.classList.remove("error-text");
+    statusEl.classList.add("success-text", "text-xs");
+
+    const ok = await apiPost("appendStudent", {
       school, province, feelfitId, sensId, questionnaireId,
       id, fullName, sex, weight: weightStr, height: heightStr, groupType,
       timestamp: new Date().toISOString()
     });
 
-    // refresh from Sheet (best effort)
-    await refreshFromSheet();
+    if (nextBtn) nextBtn.disabled = false;
+
+    if (!ok) {
+      statusEl.textContent = "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+      statusEl.classList.remove("success-text");
+      statusEl.classList.add("error-text");
+      return;
+    }
+
+    scheduleBackgroundSync("บันทึกส่วนที่ 1");
 
     document.getElementById("student-mini-id").textContent = currentStudent.id;
     document.getElementById("student-mini-school").textContent = currentStudent.school;
@@ -1249,14 +1288,14 @@
     const statusEl = document.getElementById("student-log-status");
     if (statusEl) {
       statusEl.textContent = "";
-      statusEl.classList.remove("error-text","success-text");
+      statusEl.classList.remove("error-text","success-text","text-xs");
     }
   }
 
   async function saveStudentTable() {
     const statusEl = document.getElementById("student-log-status");
     statusEl.textContent = "";
-    statusEl.classList.remove("error-text", "success-text");
+    statusEl.classList.remove("error-text", "success-text", "text-xs");
 
     if (!currentStudent) {
       statusEl.textContent = "กรุณากรอกข้อมูลส่วนที่ 1 ให้เรียบร้อยก่อน";
@@ -1268,6 +1307,7 @@
     const startActivity = document.getElementById("s-activityStart").value;
     const endActivity = document.getElementById("s-activityEnd").value;
 
+    // ✅ ไม่บังคับแล้ว
     const classActivities = getCheckedClassActivities();
     const peStart = document.getElementById("s-peStart").value;
     const peEnd = document.getElementById("s-peEnd").value;
@@ -1297,14 +1337,14 @@
       return;
     }
 
+    // ✅ เฉพาะที่ยังบังคับจริง ๆ
     const requiredMissing =
       !dateVal || !startActivity || !endActivity ||
-      classActivities.length === 0 || !peStart || !peEnd ||
       caloriesVal === "" || stepsVal === "" || distanceVal === "" ||
       sedMin === null || lightMin === null || modMin === null || vigMin === null || vvigMin === null;
 
     if (requiredMissing) {
-      statusEl.textContent = "กรุณากรอกข้อมูลให้ครบทุกช่อง ยกเว้น \"หมายเหตุ\" ที่สามารถเว้นว่างได้";
+      statusEl.textContent = "กรุณากรอกข้อมูลให้ครบทุกช่อง ยกเว้น \"หมายเหตุ\" และหัวข้อที่ไม่บังคับ";
       statusEl.classList.add("error-text");
       return;
     }
@@ -1316,7 +1356,6 @@
     const nextIndex = existingForStudent.length + 1;
 
     const entry = {
-      // student part 1 fields
       studentId: currentStudent.id,
       fullName: currentStudent.fullName,
       sex: currentStudent.sex,
@@ -1329,11 +1368,12 @@
       height: currentStudent.height,
       groupType: currentStudent.groupType,
 
-      // record fields
       index: nextIndex,
       date: dateVal,
       activityStart: startActivity,
       activityEnd: endActivity,
+
+      // ✅ ไม่บังคับแล้ว: ส่งค่าว่างได้
       classActivities: classActivities,
       peStart: peStart,
       peEnd: peEnd,
@@ -1356,23 +1396,39 @@
     dataEntries.push(entry);
     saveCacheToStorage();
 
-    // send to Sheet
-    await apiPost("appendEntry", entry);
+    // ✅ ข้อความสีเขียวเล็กระหว่างบันทึก + ปิดปุ่มกันกดซ้ำ
+    const saveBtn = document.getElementById("student-save-btn");
+    if (saveBtn) saveBtn.disabled = true;
 
-    // refresh from Sheet (best-effort)
-    await refreshFromSheet();
+    statusEl.textContent = "กำลังบันทึกข้อมูล กรุณารอซักครู่";
+    statusEl.classList.remove("error-text");
+    statusEl.classList.add("success-text", "text-xs");
 
-    statusEl.textContent = "บันทึกข้อมูลเรียบร้อยแล้ว";
+    // send to Sheet (ไม่รอ refresh จากชีต เพื่อให้ “คลิกแล้วไม่หน่วง”)
+    const ok = await apiPost("appendEntry", entry);
+
+    if (saveBtn) saveBtn.disabled = false;
+
+    if (!ok) {
+      statusEl.textContent = "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+      statusEl.classList.remove("success-text");
+      statusEl.classList.add("error-text");
+      return;
+    }
+
+    // ซิงก์เข้าชีตในพื้นหลัง
+    scheduleBackgroundSync("บันทึกส่วนที่ 2");
+
+    statusEl.textContent = "บันทึกข้อมูลเรียบร้อยแล้ว (กำลังซิงก์เข้าชีตในพื้นหลัง)";
+    statusEl.classList.remove("text-xs");
     statusEl.classList.add("success-text");
 
     renderStudentHistory();
     resetStudentLog();
 
-    // if admin currently on, refresh table
     if (currentUser) {
       updateUserHeader();
       renderSchoolList();
-      renderSubAdminList();       // ✅ เพิ่ม
       renderSummaryFilterOptions();
       renderSummaryTable();
     }
@@ -1400,6 +1456,8 @@
     let html = "";
     entries.forEach(e => {
       const actText = Array.isArray(e.classActivities) && e.classActivities.length > 0 ? e.classActivities.join(" / ") : "-";
+      const peText = (e.peStart || e.peEnd) ? `${e.peStart || "-"} - ${e.peEnd || "-"}` : "-";
+
       html += `
         <div class="history-card">
           <div class="history-header">
@@ -1407,7 +1465,7 @@
           </div>
           <div class="history-grid">
             <div style="min-width:280px;"><span class="history-label">กิจกรรมในห้องเรียน:</span> ${actText}</div>
-            <div><span class="history-label">คาบพลศึกษา:</span> ${e.peStart || "-"} - ${e.peEnd || "-"}</div>
+            <div><span class="history-label">คาบพลศึกษา:</span> ${peText}</div>
 
             <div><span class="history-label">แคลอรี่:</span> ${e.calories ?? "-"} kcal</div>
             <div><span class="history-label">ก้าว:</span> ${e.steps ?? "-"} ก้าว</div>
@@ -1428,7 +1486,6 @@
   document.getElementById("subadmin-login-form").addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    // ensure latest from sheet
     await refreshFromSheet();
 
     const u = document.getElementById("sub-login-username").value.trim();
@@ -1472,7 +1529,6 @@
       return;
     }
 
-    // refresh to avoid duplicate
     await refreshFromSheet();
 
     if (subAdmins.find(a => a.username === username) || username === mainAdmin.username) {
@@ -1491,8 +1547,8 @@
       allowedSchools: [institution]
     };
 
-    // send to sheet
     await apiPost("registerSubadmin", newSub);
+    scheduleBackgroundSync("สมัครครู");
     await refreshFromSheet();
 
     statusEl.textContent = "ลงทะเบียนสำเร็จ และเข้าสู่ระบบเป็นครูผู้ดูแลระบบ";
@@ -1510,7 +1566,6 @@
   document.getElementById("main-login-form").addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    // ensure latest
     await refreshFromSheet();
 
     const u = document.getElementById("main-login-username").value.trim();
@@ -1538,7 +1593,6 @@
     if (currentUser) {
       updateUserHeader();
       renderSchoolList();
-      renderSubAdminList();       // ✅ เพิ่ม
       renderSummaryFilterOptions();
       renderSummaryTable();
     }
@@ -1581,18 +1635,13 @@
     const name = input.value.trim();
     if (!name) return;
 
-    // optimistic
     if (!schools.includes(name)) schools.push(name);
     saveCacheToStorage();
     renderSchoolList();
     renderSummaryFilterOptions();
 
     await apiPost("addSchool", { school: name });
-    await refreshFromSheet();
-
-    renderSchoolList();
-    renderSummaryFilterOptions();
-    renderSummaryTable();
+    scheduleBackgroundSync("เพิ่มโรงเรียน");
 
     input.value = "";
   }
@@ -1611,77 +1660,6 @@
     listEl.innerHTML = html;
   }
 
-  // ===== Cypas Team: Subadmin management =====
-  function renderSubAdminList() {
-    const card = document.getElementById("subadmin-management-card");
-    const listEl = document.getElementById("subadmin-list");
-    if (!card || !listEl) return;
-
-    if (!currentUser || currentUser.role !== "mainAdmin") {
-      card.classList.add("hidden");
-      return;
-    }
-
-    card.classList.remove("hidden");
-
-    if (!Array.isArray(subAdmins) || subAdmins.length === 0) {
-      listEl.innerHTML = '<p class="text-xs">ยังไม่มีครูผู้ดูแลระบบในระบบ</p>';
-      return;
-    }
-
-    let html = '<div class="text-sm">';
-    subAdmins.forEach(sa => {
-      html += `
-        <div class="history-card" style="background:#fff;">
-          <div class="flex items-center justify-between gap-2">
-            <div>
-              <div><span class="font-bold">${sa.username}</span> <span class="badge sub">ครูผู้ดูแลระบบ</span></div>
-              <div class="text-xs" style="color:#6b7280;">
-                โรงเรียนที่มีสิทธิ์: ${
-                  Array.isArray(sa.allowedSchools) && sa.allowedSchools.length
-                    ? sa.allowedSchools.map(s => `<span class="pill">${s}</span>`).join(" ")
-                    : "-"
-                }
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <button type="button" class="danger" onclick="disableSubAdminUI('${sa.username}')">ปิดใช้งาน</button>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-    html += "</div>";
-    listEl.innerHTML = html;
-  }
-
-  async function disableSubAdminUI(username) {
-    if (!currentUser || currentUser.role !== "mainAdmin") return;
-    if (!username) return;
-
-    const ok = confirm(`ยืนยันการปิดใช้งานครูผู้ดูแลระบบ: ${username} ?`);
-    if (!ok) return;
-
-    // optimistic
-    subAdmins = subAdmins.filter(x => x.username !== username);
-    saveCacheToStorage();
-    renderSubAdminList();
-
-    await apiPost("disableSubadmin", {
-      adminUsername: mainAdmin.username,
-      adminPassword: mainAdmin.password,
-      username: username
-    });
-
-    await new Promise(r => setTimeout(r, 800));
-    await refreshFromSheet();
-
-    updateUserHeader();
-    renderSubAdminList();
-    renderSummaryFilterOptions();
-    renderSummaryTable();
-  }
-
   // ===== Summary & export =====
   function getAvailableSchoolsForCurrentUser() {
     if (!currentUser) return [];
@@ -1690,13 +1668,12 @@
     if (currentUser.role === "subAdmin") {
       const allowed = Array.isArray(currentUser.allowedSchools) ? currentUser.allowedSchools : [];
       const available = schools.filter(s => allowed.some(a => schoolMatches(s, a)));
-      // ถ้าบางชื่อไม่ได้อยู่ใน Schools แต่มีใน dataEntries ให้รวมด้วย
+
       const extraFromEntries = Array.from(new Set(
         dataEntries.map(e => String(e.school || "")).filter(Boolean)
       )).filter(s => allowed.some(a => schoolMatches(s, a)));
 
-      const merged = Array.from(new Set([...available, ...extraFromEntries]));
-      return merged;
+      return Array.from(new Set([...available, ...extraFromEntries]));
     }
     return [];
   }
@@ -1813,7 +1790,7 @@
       cells.forEach((c, idx) => {
         const td = document.createElement("td");
         td.textContent = (c === null || c === undefined) ? "" : String(c);
-        if (idx === 11) td.classList.add("text-center"); // index column
+        if (idx === 11) td.classList.add("text-center");
         tr.appendChild(td);
       });
 
@@ -1885,7 +1862,6 @@
       csvLines.push(line);
     });
 
-    // ✅ Fix “ตัวหนังสือต่างดาว” ใน Excel: เติม UTF-8 BOM
     const bom = "\uFEFF";
     const blob = new Blob([bom + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
 
@@ -1903,23 +1879,18 @@
 
   // ===== Init =====
   window.addEventListener("DOMContentLoaded", async function () {
-    // load cache first (fast)
     loadFromStorage();
+    // โหลดจากชีตแบบ best-effort (ถ้าช้าหรือ timeout ก็ยังใช้งาน cache ได้)
+    refreshFromSheet();
 
-    // then refresh from Sheet (best-effort)
-    await refreshFromSheet();
-
-    // PE time dropdown 07:00–17:00 (24H)
     populateTimeSelectRange("s-peStart", "07:00", "17:00", 5);
     populateTimeSelectRange("s-peEnd", "07:00", "17:00", 5);
 
-    // duration dropdowns
     const hourIds = ["s-sedentary-h","s-light-h","s-moderate-h","s-vigorous-h","s-veryVigorous-h"];
     const minIds  = ["s-sedentary-m","s-light-m","s-moderate-m","s-vigorous-m","s-veryVigorous-m"];
     hourIds.forEach(id => populateNumberSelect(id, 0, 12, 1));
     minIds.forEach(id => populateNumberSelect(id, 0, 59, 1));
 
-    // start at role page
     backToRoleSelect();
   });
 </script>
